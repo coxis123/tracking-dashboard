@@ -13,7 +13,7 @@
   .badge { color:#fff; padding:4px 12px; border-radius:4px; font-weight:700; font-size:13px; letter-spacing:0.5px }
 
   /* Status bar */
-  .status-bar { display:flex; align-items:center; gap:16px; margin-bottom:20px; padding:14px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:10px }
+  .status-bar { display:flex; align-items:center; gap:16px; margin-bottom:20px; padding:14px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; flex-wrap:wrap }
   .status-bar .meta { font-size:12px; color:#94a3b8 }
   .status-bar .last-check { font-size:14px; font-weight:600 }
 
@@ -23,12 +23,14 @@
   .card h2 .count { background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:10px; font-size:12px }
 
   /* Summary row */
-  .summary { display:flex; gap:12px; margin-bottom:14px }
-  .summary-item { flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; text-align:center }
+  .summary { display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap }
+  .summary-item { flex:1; min-width:120px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; text-align:center }
   .summary-item .num { font-size:28px; font-weight:700 }
   .summary-item .label { font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px }
   .summary-item.lead .num { color:#3b82f6 }
   .summary-item.purchase .num { color:#22c55e }
+  .summary-item.revenue .num { color:#f59e0b }
+  .summary-item.entrypoints .num { color:#8b5cf6 }
 
   /* Tables */
   table { width:100%; border-collapse:collapse }
@@ -37,11 +39,15 @@
   td.ts { color:#94a3b8; font-size:12px; white-space:nowrap }
   td.empty { text-align:center; color:#94a3b8; padding:20px; font-style:italic }
   .table-wrap { max-height:400px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px }
+  td.num-col { text-align:right; font-variant-numeric:tabular-nums }
+  th.num-col { text-align:right }
 
   /* Site badges */
   .site-badge { padding:2px 6px; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:0.5px }
   .site-badge.rli { background:#dbeafe; color:#2563eb }
   .site-badge.tr { background:#fce7f3; color:#be185d }
+  .site-badge.quiz { background:#ccfbf1; color:#0d9488 }
+  .site-badge.summit { background:#ffedd5; color:#ea580c }
   .site-badge.unknown { background:#fee2e2; color:#dc2626 }
 
   /* AnyTrack badges */
@@ -53,24 +59,10 @@
   .issue { padding:8px 12px; border-left:3px solid; border-radius:0 6px 6px 0; margin-bottom:6px; font-size:13px }
   .issue.info { border-left-color:#94a3b8; background:#fafafa; opacity:0.7 }
   .all-clear { padding:14px; color:#22c55e; font-weight:600 }
-  .info-header { margin-top:10px; font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:0.5px }
   .sev-badge { padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600; margin-right:6px }
   .sev-badge.critical { background:#fee2e2; color:#dc2626 }
   .sev-badge.warning { background:#fef3c7; color:#d97706 }
   .sev-badge.info { background:#e0e7ff; color:#4f46e5 }
-
-  /* Snippet grid */
-  .snippet-grid { display:flex; flex-wrap:wrap; gap:8px }
-  .snippet-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; min-width:180px; flex:1 }
-  .snippet-site { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px }
-  .snippet-id { font-weight:700; font-size:14px }
-  .snippet-id.ok::before { content:"\2022 "; color:#22c55e }
-  .snippet-id.bad::before { content:"\2022 "; color:#ef4444 }
-  .snippet-name { font-size:13px; color:#374151 }
-  .snippet-at { font-size:11px; margin-top:4px }
-  .snippet-at.at-ok { color:#16a34a }
-  .snippet-at.at-none { color:#94a3b8 }
-  .snippet-err { color:#ef4444; font-size:12px; margin-top:4px }
 
   /* AnyTrack section */
   .at-site { margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0 }
@@ -84,17 +76,9 @@
   .at-snip-name { color:#475569; font-weight:500 }
   .at-ok { color:#16a34a; font-weight:600 }
   .at-webhook { color:#d97706 }
-  .at-none { color:#94a3b8 }
 
   /* Bump badge */
   .bump { background:#f3e8ff; color:#7c3aed; padding:1px 5px; border-radius:3px; font-size:11px }
-
-  /* Tabs */
-  .tabs { display:flex; gap:0; margin-bottom:-1px; position:relative; z-index:1 }
-  .tab { padding:8px 16px; font-size:13px; font-weight:600; color:#64748b; cursor:pointer; border:1px solid transparent; border-bottom:none; border-radius:8px 8px 0 0; background:transparent }
-  .tab.active { color:#1e293b; background:#fff; border-color:#e2e8f0 }
-  .tab-content { display:none }
-  .tab-content.active { display:block }
 
   /* Refresh button */
   .refresh-btn { background:#3b82f6; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto }
@@ -110,285 +94,70 @@
   .fresh-row { background:#f0fdf4 }
 
   .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px }
-  @media (max-width:768px) { .grid-2 { grid-template-columns:1fr } }
+  @media (max-width:768px) { .grid-2 { grid-template-columns:1fr } .summary { flex-direction:column } }
+
+  /* Entrypoint table row hover */
+  #entrypoint-table tr:hover { background:#f8fafc }
+  #entrypoint-table tr { cursor:default }
 </style>
 </head>
 <body>
 
 <h1>RLI + TR Tracking Dashboard</h1>
 <div class="subtitle">
-  Monitor data from last check &middot; Generated 2026-03-29 12:26 UTC
+  Live data from PostHog via proxy
   <span id="live-status" style="display:none;margin-left:8px"><span class="live-dot"></span><span id="live-label">Live</span></span>
 </div>
 
 <!-- Status bar -->
 <div class="status-bar">
-  <span class="badge" style="background:#ef4444">CRITICAL</span>
+  <span class="badge" style="background:#22c55e" id="status-badge">LOADING</span>
   <div>
-    <div class="last-check">Last monitor run: 2026-03-29T12:26:58</div>
-    <div class="meta">Dashboard generated: 2026-03-29 12:26 UTC</div>
+    <div class="last-check" id="last-check-label">Fetching live data&hellip;</div>
+    <div class="meta" id="status-meta"></div>
   </div>
   <button class="refresh-btn" onclick="refreshLive()" id="refresh-btn">Refresh Live</button>
   <span class="refresh-status" id="refresh-status"></span>
 </div>
 
-<!-- Summary -->
+<!-- KPI Summary -->
 <div class="summary">
   <div class="summary-item lead">
-    <div class="num" id="lead-count">34</div>
+    <div class="num" id="lead-count">—</div>
     <div class="label">Leads (2h)</div>
   </div>
   <div class="summary-item purchase">
-    <div class="num" id="purchase-count">0</div>
+    <div class="num" id="purchase-count">—</div>
     <div class="label">Purchases (2h)</div>
+  </div>
+  <div class="summary-item revenue">
+    <div class="num" id="revenue-total">—</div>
+    <div class="label">Revenue (2h)</div>
+  </div>
+  <div class="summary-item entrypoints">
+    <div class="num" id="entrypoint-count">—</div>
+    <div class="label">Active Entrypoints</div>
+  </div>
+</div>
+
+<!-- Entrypoints (primary view) -->
+<div class="card">
+  <h2>Entrypoints <span class="count" id="entrypoint-count-badge">0</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Entrypoint</th><th>Site</th><th class="num-col">Leads</th><th class="num-col">Purchases</th><th class="num-col">Revenue</th><th>Top Source</th><th>Last Activity</th></tr></thead>
+      <tbody id="entrypoint-table"><tr><td colspan="7" class="empty">Loading&hellip;</td></tr></tbody>
+    </table>
   </div>
 </div>
 
 <!-- Lead Events -->
 <div class="card">
-  <h2>Leads <span class="count" id="lead-count-badge">34</span></h2>
+  <h2>Leads <span class="count" id="lead-count-badge">0</span></h2>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Time</th><th>Site</th><th>Email</th><th>Page</th><th>AnyTrack</th></tr></thead>
-      <tbody id="lead-table">
-        <tr>
-          <td class="ts">2026-03-29 12:25:28</td>
-          <td><span class="site-badge rli">RLI</span></td>
-          <td title="karen.harris555@gmail.com">karen.harris555@gmail.com</td>
-          <td title="CertificationGuide">CertificationGuide</td>
-          <td><span class="at-yes">AT</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:18:57</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="smcganity@icloud.com">smcganity@icloud.com</td>
-          <td title="20-relationship-practices">20-relationship-practices</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:18:54</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="smcganity@icloud.com">smcganity@icloud.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:14:12</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="tbeallschwab@gmail.com">tbeallschwab@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:14:05</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="tbeallschwab@gmail.com">tbeallschwab@gmail.com</td>
-          <td title="new-quiz">new-quiz</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:13:16</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="lisa_green13@yahoo.ca">lisa_green13@yahoo.ca</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:13:08</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="lisa_green13@yahoo.ca">lisa_green13@yahoo.ca</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:10:12</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="mateibotan@yahoo.com">mateibotan@yahoo.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:10:06</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="mateibotan@yahoo.com">mateibotan@yahoo.com</td>
-          <td title="new-quiz">new-quiz</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:06:42</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="lisa@salesforesight.com.au">lisa@salesforesight.com.au</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:06:35</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="lisa@salesforesight.com.au">lisa@salesforesight.com.au</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:03:20</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="shermanjackie@icloud.com">shermanjackie@icloud.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 12:03:16</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="shermanjackie@icloud.com">shermanjackie@icloud.com</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:58:51</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="jillyakins@yahoo.com">jillyakins@yahoo.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:58:46</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="jillyakins@yahoo.com">jillyakins@yahoo.com</td>
-          <td title="new-quiz">new-quiz</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:53:11</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="markus.wagenhaeuser@posteo.de">markus.wagenhaeuser@posteo.de</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:53:06</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="markus.wagenhaeuser@posteo.de">markus.wagenhaeuser@posteo.de</td>
-          <td title="new-quiz">new-quiz</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:50:55</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="erinbcourtney@gmail.com">erinbcourtney@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:50:50</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="erinbcourtney@gmail.com">erinbcourtney@gmail.com</td>
-          <td title="quiz-v2">quiz-v2</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:46:42</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="njblok@gmail.com">njblok@gmail.com</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:39:14</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="vivdobia@hotmail.com">vivdobia@hotmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:30:48</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="ptndxn@gmail.com">ptndxn@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:30:42</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="ptndxn@gmail.com">ptndxn@gmail.com</td>
-          <td title="quiz-v2">quiz-v2</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:08:35</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="julie.k.matsui@gmail.con">julie.k.matsui@gmail.con</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:08:34</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="julie.k.matsui@gmail.con">julie.k.matsui@gmail.con</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:08:10</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="maithevanluijk@gmail.com">maithevanluijk@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:08:03</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="maithevanluijk@gmail.com">maithevanluijk@gmail.com</td>
-          <td title="quiz-v2">quiz-v2</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:06:18</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="aprillove28@hotmail.com">aprillove28@hotmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:01:24</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="sijie.amandahan@gmail.com">sijie.amandahan@gmail.com</td>
-          <td title="new-quiz">new-quiz</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 11:00:00</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="natalia.chodak@gmail.com">natalia.chodak@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 10:59:56</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="natalia.chodak@gmail.com">natalia.chodak@gmail.com</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 10:46:52</td>
-          <td><span class="site-badge tr">TR</span></td>
-          <td title="cghannoum@gmail.com">cghannoum@gmail.com</td>
-          <td title="ontraport_webhook">ontraport_webhook</td>
-          <td><span class="at-webhook">webhook</span></td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 10:46:43</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="cghannoum@gmail.com">cghannoum@gmail.com</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="ts">2026-03-29 10:41:37</td>
-          <td><span class="site-badge unknown">??</span></td>
-          <td title="charlesellis25@yahoo.com">charlesellis25@yahoo.com</td>
-          <td title="tripwire">tripwire</td>
-          <td>—</td>
-        </tr></tbody>
+      <tbody id="lead-table"><tr><td colspan="5" class="empty">Loading&hellip;</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -399,20 +168,20 @@
   <div class="table-wrap">
     <table>
       <thead><tr><th>Time</th><th>Site</th><th>Email</th><th>Product</th><th>Price</th><th>Order</th><th>AnyTrack</th></tr></thead>
-      <tbody id="purchase-table"><tr><td colspan="7" class="empty">No Purchase events in last 2h</td></tr></tbody>
+      <tbody id="purchase-table"><tr><td colspan="7" class="empty">Loading&hellip;</td></tr></tbody>
     </table>
   </div>
 </div>
 
-<!-- Issues + Snippets side by side -->
+<!-- Issues + AnyTrack Health side by side -->
 <div class="grid-2">
   <div class="card">
-    <h2>Issues</h2>
-    <div class="issue" style="border-left-color:#f59e0b;background:#f59e0b11"><span class="sev-badge warning">WARNING</span> Unknown site value &#x27;grid.terryreal.com&#x27; in Lead event</div><div class="issue" style="border-left-color:#ef4444;background:#ef444411"><span class="sev-badge critical">CRITICAL</span> Cannot read snippet #42980 (Universal Tracker) on TR</div><div class="issue" style="border-left-color:#ef4444;background:#ef444411"><span class="sev-badge critical">CRITICAL</span> Cannot read snippet #42981 (Elementor Form Tracker) on TR</div>
+    <h2>Issues <span class="count" id="issue-count-badge">0</span></h2>
+    <div id="issues-container"><div class="all-clear">Checking&hellip;</div></div>
   </div>
   <div class="card">
     <h2>AnyTrack Health</h2>
-    
+
         <div class="at-site">
           <div class="at-site-header">
             <span class="at-site-label">RLI</span>
@@ -430,61 +199,11 @@
   </div>
 </div>
 
-<!-- Snippet Integrity -->
-<div class="card">
-  <h2>Snippet Integrity</h2>
-  <div class="snippet-grid">
-        <div class="snippet-card">
-          <div class="snippet-site">RLI</div>
-          <div class="snippet-id ok">#55587</div>
-          <div class="snippet-name">Guide/Cert Tracking</div>
-          <div class="snippet-at at-ok">AT: JS trigger</div>
-          
-        </div>
-        <div class="snippet-card">
-          <div class="snippet-site">RLI</div>
-          <div class="snippet-id ok">#56948</div>
-          <div class="snippet-name">Universal Tracker</div>
-          <div class="snippet-at at-ok">AT: JS trigger</div>
-          
-        </div>
-        <div class="snippet-card">
-          <div class="snippet-site">RLI</div>
-          <div class="snippet-id ok">#56949</div>
-          <div class="snippet-name">Fluent Form Tracker</div>
-          <div class="snippet-at at-ok">AT: JS trigger</div>
-          
-        </div>
-        <div class="snippet-card">
-          <div class="snippet-site">RLI</div>
-          <div class="snippet-id ok">#57438</div>
-          <div class="snippet-name">Elementor Form Tracker</div>
-          <div class="snippet-at at-ok">AT: JS trigger</div>
-          
-        </div>
-        <div class="snippet-card">
-          <div class="snippet-site"></div>
-          <div class="snippet-id bad">#42980</div>
-          <div class="snippet-name">Universal Tracker</div>
-          
-          <div class="snippet-err">read failed</div>
-        </div>
-        <div class="snippet-card">
-          <div class="snippet-site"></div>
-          <div class="snippet-id bad">#42981</div>
-          <div class="snippet-name">Elementor Form Tracker</div>
-          
-          <div class="snippet-err">read failed</div>
-        </div></div>
-</div>
-
 <div style="text-align:center;margin-top:20px;font-size:12px;color:#94a3b8">
   Powered by <a href="https://github.com/relationallifetherapy/rli-tracking-monitor" style="color:#3b82f6">rli-tracking-monitor</a>
-  &middot; Monitor runs every 15 min via GitHub Actions
   &middot; Live refresh via proxy
 </div>
 
-<!-- Client-side real-time refresh via WP proxy (no API key exposed) -->
 <script>
 const PROXY = "https://relationallife.com/wp-json/rli/v1/posthog-events";
 
@@ -494,15 +213,44 @@ function esc(s) {
   return d.innerHTML;
 }
 
+function maskEmail(email) {
+  if (!email || email === '\u2014') return '\u2014';
+  const parts = email.split('@');
+  if (parts.length !== 2) return email;
+  const local = parts[0];
+  const masked = local.length <= 2 ? local[0] + '***' : local.slice(0, 2) + '***';
+  return masked + '@' + parts[1];
+}
+
+function siteKey(site) {
+  if (!site) return 'unknown';
+  const s = site.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  if (s === 'relationallife.com' || s === 'www.relationallife.com') return 'rli';
+  if (s === 'terryreal.com' || s === 'www.terryreal.com') return 'tr';
+  if (s === 'grid.terryreal.com') return 'quiz';
+  if (s === 'summit.terryreal.com') return 'summit';
+  if (s.includes('relationallife')) return 'rli';
+  if (s.includes('grid.terryreal') || s.includes('grid')) return 'quiz';
+  if (s.includes('summit.terryreal') || s.includes('summit')) return 'summit';
+  if (s.includes('terryreal')) return 'tr';
+  return 'unknown';
+}
+
 function siteBadge(site) {
-  if (site === 'relationallife.com') return '<span class="site-badge rli">RLI</span>';
-  if (site === 'terryreal.com') return '<span class="site-badge tr">TR</span>';
-  return site ? '<span class="site-badge unknown">??</span>' : '<span class="site-badge unknown">??</span>';
+  const key = siteKey(site);
+  const labels = { rli: 'RLI', tr: 'TR', quiz: 'Quiz', summit: 'Summit', unknown: '??' };
+  return `<span class="site-badge ${key}">${labels[key]}</span>`;
+}
+
+function siteLabel(site) {
+  const labels = { rli: 'RLI', tr: 'TR', quiz: 'Quiz', summit: 'Summit', unknown: '??' };
+  return labels[siteKey(site)] || '??';
 }
 
 function atBadgeLead(site) {
-  if (site === 'relationallife.com') return '<span class="at-yes">AT</span>';
-  if (site === 'terryreal.com') return '<span class="at-webhook">webhook</span>';
+  const key = siteKey(site);
+  if (key === 'rli') return '<span class="at-yes">AT</span>';
+  if (key === 'tr' || key === 'quiz' || key === 'summit') return '<span class="at-webhook">webhook</span>';
   return '\u2014';
 }
 
@@ -516,20 +264,20 @@ async function fetchEvents(eventName, hours) {
 
 function renderLeadRow(ev) {
   const ts = (ev.timestamp || '').slice(0, 19).replace('T', ' ');
-  const email = esc(ev.email || '\u2014');
+  const email = esc(maskEmail(ev.email));
   const page = esc((ev.page || '\u2014').slice(0, 35));
   return `<tr class="fresh-row">
     <td class="ts">${ts}</td>
     <td>${siteBadge(ev.site)}</td>
-    <td>${email}</td>
-    <td>${page}</td>
+    <td title="${esc(maskEmail(ev.email))}">${email}</td>
+    <td title="${esc(ev.page || '')}">${page}</td>
     <td>${atBadgeLead(ev.site)}</td>
   </tr>`;
 }
 
 function renderPurchaseRow(ev) {
   const ts = (ev.timestamp || '').slice(0, 19).replace('T', ' ');
-  const email = esc(ev.email || '\u2014');
+  const email = esc(maskEmail(ev.email));
   const product = esc(ev.product_name || '\u2014');
   const price = ev.product_price || '';
   const orderId = esc(ev.order_id || '\u2014');
@@ -537,18 +285,117 @@ function renderPurchaseRow(ev) {
   return `<tr class="fresh-row">
     <td class="ts">${ts}</td>
     <td>${siteBadge(ev.site)}</td>
-    <td>${email}</td>
+    <td title="${email}">${email}</td>
     <td>${product}${bump}</td>
-    <td>${price ? '$' + price : '\u2014'}</td>
+    <td class="num-col">${price ? '$' + Number(price).toFixed(2) : '\u2014'}</td>
     <td>${orderId}</td>
     <td><span class="at-webhook">TC webhook</span></td>
   </tr>`;
+}
+
+function buildEntrypoints(leads, purchases) {
+  const map = {};
+  function getKey(site, page) {
+    const s = siteLabel(site);
+    const p = page || '(unknown)';
+    return `${s}::${p}`;
+  }
+
+  leads.forEach(ev => {
+    const key = getKey(ev.site, ev.page);
+    if (!map[key]) map[key] = { site: ev.site, page: ev.page || '(unknown)', leads: 0, purchases: 0, revenue: 0, sources: {}, lastTs: '' };
+    map[key].leads++;
+    if (ev.timestamp && ev.timestamp > map[key].lastTs) map[key].lastTs = ev.timestamp;
+    const src = ev.utm_source || ev.referrer || 'direct';
+    map[key].sources[src] = (map[key].sources[src] || 0) + 1;
+  });
+
+  purchases.forEach(ev => {
+    const key = getKey(ev.site, ev.page || ev.product_name);
+    if (!map[key]) map[key] = { site: ev.site, page: ev.page || ev.product_name || '(unknown)', leads: 0, purchases: 0, revenue: 0, sources: {}, lastTs: '' };
+    map[key].purchases++;
+    map[key].revenue += Number(ev.product_price) || 0;
+    if (ev.timestamp && ev.timestamp > map[key].lastTs) map[key].lastTs = ev.timestamp;
+    const src = ev.utm_source || ev.referrer || 'direct';
+    map[key].sources[src] = (map[key].sources[src] || 0) + 1;
+  });
+
+  return Object.values(map).sort((a, b) => (b.leads + b.purchases) - (a.leads + a.purchases));
+}
+
+function topSource(sources) {
+  let best = 'direct', max = 0;
+  for (const [k, v] of Object.entries(sources)) {
+    if (v > max) { max = v; best = k; }
+  }
+  return esc(best);
+}
+
+function renderEntrypointRow(ep) {
+  const ts = ep.lastTs ? ep.lastTs.slice(0, 16).replace('T', ' ') : '\u2014';
+  const rev = ep.revenue > 0 ? '$' + ep.revenue.toFixed(2) : '\u2014';
+  return `<tr>
+    <td><strong>${esc(ep.page)}</strong></td>
+    <td>${siteBadge(ep.site)}</td>
+    <td class="num-col">${ep.leads}</td>
+    <td class="num-col">${ep.purchases}</td>
+    <td class="num-col">${rev}</td>
+    <td>${topSource(ep.sources)}</td>
+    <td class="ts">${ts}</td>
+  </tr>`;
+}
+
+function detectIssues(leads, purchases) {
+  const issues = [];
+  const unknownSites = new Set();
+  let noEmailCount = 0;
+
+  leads.forEach(ev => {
+    if (siteKey(ev.site) === 'unknown') unknownSites.add(ev.site || '(empty)');
+    if (!ev.email) noEmailCount++;
+  });
+  purchases.forEach(ev => {
+    if (siteKey(ev.site) === 'unknown') unknownSites.add(ev.site || '(empty)');
+    if (!ev.email) noEmailCount++;
+  });
+
+  unknownSites.forEach(s => {
+    issues.push({ sev: 'warning', text: `Unknown site value '${s}' in events` });
+  });
+  if (noEmailCount > 0) {
+    issues.push({ sev: 'warning', text: `${noEmailCount} event(s) missing email address` });
+  }
+  if (leads.length === 0 && purchases.length === 0) {
+    issues.push({ sev: 'info', text: 'No events in the last 2 hours' });
+  }
+
+  return issues;
+}
+
+function renderIssues(issues) {
+  const container = document.getElementById('issues-container');
+  const badge = document.getElementById('issue-count-badge');
+
+  if (issues.length === 0) {
+    container.innerHTML = '<div class="all-clear">\u2705 All clear — no issues detected</div>';
+    badge.textContent = '0';
+    return;
+  }
+
+  badge.textContent = issues.length;
+  const colors = { critical: '#ef4444', warning: '#f59e0b', info: '#94a3b8' };
+  container.innerHTML = issues.map(i =>
+    `<div class="issue" style="border-left-color:${colors[i.sev]};background:${colors[i.sev]}11"><span class="sev-badge ${i.sev}">${i.sev.toUpperCase()}</span> ${esc(i.text)}</div>`
+  ).join('');
 }
 
 async function refreshLive() {
   const btn = document.getElementById('refresh-btn');
   const status = document.getElementById('refresh-status');
   const liveStatus = document.getElementById('live-status');
+  const statusBadge = document.getElementById('status-badge');
+  const lastCheckLabel = document.getElementById('last-check-label');
+  const statusMeta = document.getElementById('status-meta');
 
   btn.disabled = true;
   btn.textContent = 'Refreshing...';
@@ -576,19 +423,48 @@ async function refreshLive() {
       purchaseTable.innerHTML = '<tr><td colspan="7" class="empty">No Purchase events in last 2h</td></tr>';
     }
 
+    // Build and render entrypoints
+    const entrypoints = buildEntrypoints(leads, purchases);
+    const entrypointTable = document.getElementById('entrypoint-table');
+    if (entrypoints.length > 0) {
+      entrypointTable.innerHTML = entrypoints.map(renderEntrypointRow).join('');
+    } else {
+      entrypointTable.innerHTML = '<tr><td colspan="7" class="empty">No entrypoints in last 2h</td></tr>';
+    }
+
+    // Calculate totals
+    const totalRevenue = purchases.reduce((sum, ev) => sum + (Number(ev.product_price) || 0), 0);
+
     // Update counts
     document.getElementById('lead-count').textContent = leads.length;
     document.getElementById('purchase-count').textContent = purchases.length;
+    document.getElementById('revenue-total').textContent = totalRevenue > 0 ? '$' + totalRevenue.toFixed(2) : '$0';
+    document.getElementById('entrypoint-count').textContent = entrypoints.length;
     document.getElementById('lead-count-badge').textContent = leads.length;
     document.getElementById('purchase-count-badge').textContent = purchases.length;
+    document.getElementById('entrypoint-count-badge').textContent = entrypoints.length;
 
-    const now = new Date().toLocaleTimeString();
-    status.textContent = `Updated ${now}`;
+    // Detect and render dynamic issues
+    const issues = detectIssues(leads, purchases);
+    renderIssues(issues);
+
+    // Update status bar
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    status.textContent = `Updated ${timeStr}`;
     liveStatus.style.display = 'inline';
-    document.getElementById('live-label').textContent = `Live (${now})`;
+    document.getElementById('live-label').textContent = `Live (${timeStr})`;
+
+    statusBadge.textContent = issues.some(i => i.sev === 'critical') ? 'CRITICAL' : issues.some(i => i.sev === 'warning') ? 'WARNING' : 'OK';
+    statusBadge.style.background = issues.some(i => i.sev === 'critical') ? '#ef4444' : issues.some(i => i.sev === 'warning') ? '#f59e0b' : '#22c55e';
+    lastCheckLabel.textContent = `Live data \u00b7 Last refreshed: ${now.toLocaleString()}`;
+    statusMeta.textContent = `Auto-refreshes every 60s`;
 
   } catch (e) {
     status.textContent = `Error: ${e.message}`;
+    statusBadge.textContent = 'ERROR';
+    statusBadge.style.background = '#ef4444';
+    lastCheckLabel.textContent = 'Failed to fetch live data';
     console.error('Refresh failed:', e);
   }
 
