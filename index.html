@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="300">
+<title>RLI Tracking Dashboard</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:#f8fafc; color:#1e293b; padding:20px; max-width:1100px; margin:0 auto }
+  h1 { font-size:22px; font-weight:700; margin-bottom:2px }
+  .subtitle { color:#64748b; font-size:13px; margin-bottom:20px }
+  .badge { color:#fff; padding:4px 12px; border-radius:4px; font-weight:700; font-size:13px; letter-spacing:0.5px }
+
+  /* Status bar */
+  .status-bar { display:flex; align-items:center; gap:16px; margin-bottom:20px; padding:14px 20px; background:#fff; border:1px solid #e2e8f0; border-radius:10px }
+  .status-bar .meta { font-size:12px; color:#94a3b8 }
+  .status-bar .last-check { font-size:14px; font-weight:600 }
+
+  /* Cards */
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:14px }
+  .card h2 { font-size:14px; font-weight:600; color:#475569; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:8px }
+  .card h2 .count { background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:10px; font-size:12px }
+
+  /* Summary row */
+  .summary { display:flex; gap:12px; margin-bottom:14px }
+  .summary-item { flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; text-align:center }
+  .summary-item .num { font-size:28px; font-weight:700 }
+  .summary-item .label { font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px }
+  .summary-item.lead .num { color:#3b82f6 }
+  .summary-item.purchase .num { color:#22c55e }
+
+  /* Tables */
+  table { width:100%; border-collapse:collapse }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid #f1f5f9; font-size:13px }
+  th { color:#64748b; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; position:sticky; top:0; background:#fff }
+  td.ts { color:#94a3b8; font-size:12px; white-space:nowrap }
+  td.empty { text-align:center; color:#94a3b8; padding:20px; font-style:italic }
+  .table-wrap { max-height:400px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px }
+
+  /* Site badges */
+  .site-badge { padding:2px 6px; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:0.5px }
+  .site-badge.rli { background:#dbeafe; color:#2563eb }
+  .site-badge.tr { background:#fce7f3; color:#be185d }
+  .site-badge.unknown { background:#fee2e2; color:#dc2626 }
+
+  /* AnyTrack badges */
+  .at-yes { background:#dcfce7; color:#16a34a; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600 }
+  .at-webhook { background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600 }
+  .at-none { color:#94a3b8; font-size:11px }
+
+  /* Issues */
+  .issue { padding:8px 12px; border-left:3px solid; border-radius:0 6px 6px 0; margin-bottom:6px; font-size:13px }
+  .issue.info { border-left-color:#94a3b8; background:#fafafa; opacity:0.7 }
+  .all-clear { padding:14px; color:#22c55e; font-weight:600 }
+  .info-header { margin-top:10px; font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:0.5px }
+  .sev-badge { padding:2px 6px; border-radius:3px; font-size:11px; font-weight:600; margin-right:6px }
+  .sev-badge.critical { background:#fee2e2; color:#dc2626 }
+  .sev-badge.warning { background:#fef3c7; color:#d97706 }
+  .sev-badge.info { background:#e0e7ff; color:#4f46e5 }
+
+  /* Snippet grid */
+  .snippet-grid { display:flex; flex-wrap:wrap; gap:8px }
+  .snippet-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; min-width:180px; flex:1 }
+  .snippet-site { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px }
+  .snippet-id { font-weight:700; font-size:14px }
+  .snippet-id.ok::before { content:"\2022 "; color:#22c55e }
+  .snippet-id.bad::before { content:"\2022 "; color:#ef4444 }
+  .snippet-name { font-size:13px; color:#374151 }
+  .snippet-at { font-size:11px; margin-top:4px }
+  .snippet-at.at-ok { color:#16a34a }
+  .snippet-at.at-none { color:#94a3b8 }
+  .snippet-err { color:#ef4444; font-size:12px; margin-top:4px }
+
+  /* AnyTrack section */
+  .at-site { margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0 }
+  .at-site-header { display:flex; align-items:center; gap:10px; margin-bottom:8px }
+  .at-site-label { font-weight:700; font-size:14px }
+  .at-tag { font-size:12px; padding:2px 8px; border-radius:4px }
+  .at-tag.ok { background:#dcfce7; color:#16a34a }
+  .at-tag.bad { background:#fee2e2; color:#dc2626 }
+  .at-snippets { font-size:12px }
+  .at-snippet { padding:3px 0; display:flex; align-items:center; gap:8px }
+  .at-snip-name { color:#475569; font-weight:500 }
+  .at-ok { color:#16a34a; font-weight:600 }
+  .at-webhook { color:#d97706 }
+  .at-none { color:#94a3b8 }
+
+  /* Bump badge */
+  .bump { background:#f3e8ff; color:#7c3aed; padding:1px 5px; border-radius:3px; font-size:11px }
+
+  /* Tabs */
+  .tabs { display:flex; gap:0; margin-bottom:-1px; position:relative; z-index:1 }
+  .tab { padding:8px 16px; font-size:13px; font-weight:600; color:#64748b; cursor:pointer; border:1px solid transparent; border-bottom:none; border-radius:8px 8px 0 0; background:transparent }
+  .tab.active { color:#1e293b; background:#fff; border-color:#e2e8f0 }
+  .tab-content { display:none }
+  .tab-content.active { display:block }
+
+  /* Refresh button */
+  .refresh-btn { background:#3b82f6; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto }
+  .refresh-btn:hover { background:#2563eb }
+  .refresh-btn:disabled { background:#94a3b8; cursor:wait }
+  .refresh-status { font-size:11px; color:#94a3b8; margin-left:8px }
+
+  /* Live indicator */
+  .live-dot { width:8px; height:8px; background:#22c55e; border-radius:50%; display:inline-block; margin-right:4px; animation:pulse 2s infinite }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+
+  /* Row highlight for fresh data */
+  .fresh-row { background:#f0fdf4 }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px }
+  @media (max-width:768px) { .grid-2 { grid-template-columns:1fr } }
+</style>
+</head>
+<body>
+
+<h1>RLI + TR Tracking Dashboard</h1>
+<div class="subtitle">
+  Monitor data from last check &middot; Generated 2026-03-29 12:26 UTC
+  <span id="live-status" style="display:none;margin-left:8px"><span class="live-dot"></span><span id="live-label">Live</span></span>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span class="badge" style="background:#ef4444">CRITICAL</span>
+  <div>
+    <div class="last-check">Last monitor run: 2026-03-29T12:26:58</div>
+    <div class="meta">Dashboard generated: 2026-03-29 12:26 UTC</div>
+  </div>
+  <button class="refresh-btn" onclick="refreshLive()" id="refresh-btn">Refresh Live</button>
+  <span class="refresh-status" id="refresh-status"></span>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="summary-item lead">
+    <div class="num" id="lead-count">34</div>
+    <div class="label">Leads (2h)</div>
+  </div>
+  <div class="summary-item purchase">
+    <div class="num" id="purchase-count">0</div>
+    <div class="label">Purchases (2h)</div>
+  </div>
+</div>
+
+<!-- Lead Events -->
+<div class="card">
+  <h2>Leads <span class="count" id="lead-count-badge">34</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Time</th><th>Site</th><th>Email</th><th>Page</th><th>AnyTrack</th></tr></thead>
+      <tbody id="lead-table">
+        <tr>
+          <td class="ts">2026-03-29 12:25:28</td>
+          <td><span class="site-badge rli">RLI</span></td>
+          <td title="karen.harris555@gmail.com">karen.harris555@gmail.com</td>
+          <td title="CertificationGuide">CertificationGuide</td>
+          <td><span class="at-yes">AT</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:18:57</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="smcganity@icloud.com">smcganity@icloud.com</td>
+          <td title="20-relationship-practices">20-relationship-practices</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:18:54</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="smcganity@icloud.com">smcganity@icloud.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:14:12</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="tbeallschwab@gmail.com">tbeallschwab@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:14:05</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="tbeallschwab@gmail.com">tbeallschwab@gmail.com</td>
+          <td title="new-quiz">new-quiz</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:13:16</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="lisa_green13@yahoo.ca">lisa_green13@yahoo.ca</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:13:08</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="lisa_green13@yahoo.ca">lisa_green13@yahoo.ca</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:10:12</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="mateibotan@yahoo.com">mateibotan@yahoo.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:10:06</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="mateibotan@yahoo.com">mateibotan@yahoo.com</td>
+          <td title="new-quiz">new-quiz</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:06:42</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="lisa@salesforesight.com.au">lisa@salesforesight.com.au</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:06:35</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="lisa@salesforesight.com.au">lisa@salesforesight.com.au</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:03:20</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="shermanjackie@icloud.com">shermanjackie@icloud.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 12:03:16</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="shermanjackie@icloud.com">shermanjackie@icloud.com</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:58:51</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="jillyakins@yahoo.com">jillyakins@yahoo.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:58:46</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="jillyakins@yahoo.com">jillyakins@yahoo.com</td>
+          <td title="new-quiz">new-quiz</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:53:11</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="markus.wagenhaeuser@posteo.de">markus.wagenhaeuser@posteo.de</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:53:06</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="markus.wagenhaeuser@posteo.de">markus.wagenhaeuser@posteo.de</td>
+          <td title="new-quiz">new-quiz</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:50:55</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="erinbcourtney@gmail.com">erinbcourtney@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:50:50</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="erinbcourtney@gmail.com">erinbcourtney@gmail.com</td>
+          <td title="quiz-v2">quiz-v2</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:46:42</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="njblok@gmail.com">njblok@gmail.com</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:39:14</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="vivdobia@hotmail.com">vivdobia@hotmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:30:48</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="ptndxn@gmail.com">ptndxn@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:30:42</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="ptndxn@gmail.com">ptndxn@gmail.com</td>
+          <td title="quiz-v2">quiz-v2</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:08:35</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="julie.k.matsui@gmail.con">julie.k.matsui@gmail.con</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:08:34</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="julie.k.matsui@gmail.con">julie.k.matsui@gmail.con</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:08:10</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="maithevanluijk@gmail.com">maithevanluijk@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:08:03</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="maithevanluijk@gmail.com">maithevanluijk@gmail.com</td>
+          <td title="quiz-v2">quiz-v2</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:06:18</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="aprillove28@hotmail.com">aprillove28@hotmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:01:24</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="sijie.amandahan@gmail.com">sijie.amandahan@gmail.com</td>
+          <td title="new-quiz">new-quiz</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 11:00:00</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="natalia.chodak@gmail.com">natalia.chodak@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 10:59:56</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="natalia.chodak@gmail.com">natalia.chodak@gmail.com</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 10:46:52</td>
+          <td><span class="site-badge tr">TR</span></td>
+          <td title="cghannoum@gmail.com">cghannoum@gmail.com</td>
+          <td title="ontraport_webhook">ontraport_webhook</td>
+          <td><span class="at-webhook">webhook</span></td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 10:46:43</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="cghannoum@gmail.com">cghannoum@gmail.com</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="ts">2026-03-29 10:41:37</td>
+          <td><span class="site-badge unknown">??</span></td>
+          <td title="charlesellis25@yahoo.com">charlesellis25@yahoo.com</td>
+          <td title="tripwire">tripwire</td>
+          <td>—</td>
+        </tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Purchase Events -->
+<div class="card">
+  <h2>Purchases <span class="count" id="purchase-count-badge">0</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Time</th><th>Site</th><th>Email</th><th>Product</th><th>Price</th><th>Order</th><th>AnyTrack</th></tr></thead>
+      <tbody id="purchase-table"><tr><td colspan="7" class="empty">No Purchase events in last 2h</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Issues + Snippets side by side -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Issues</h2>
+    <div class="issue" style="border-left-color:#f59e0b;background:#f59e0b11"><span class="sev-badge warning">WARNING</span> Unknown site value &#x27;grid.terryreal.com&#x27; in Lead event</div><div class="issue" style="border-left-color:#ef4444;background:#ef444411"><span class="sev-badge critical">CRITICAL</span> Cannot read snippet #42980 (Universal Tracker) on TR</div><div class="issue" style="border-left-color:#ef4444;background:#ef444411"><span class="sev-badge critical">CRITICAL</span> Cannot read snippet #42981 (Elementor Form Tracker) on TR</div>
+  </div>
+  <div class="card">
+    <h2>AnyTrack Health</h2>
+    
+        <div class="at-site">
+          <div class="at-site-header">
+            <span class="at-site-label">RLI</span>
+            <span class="at-tag ok">Site-wide tag: loaded (via snippet)</span>
+          </div>
+          <div class="at-snippets"><div class="at-snippet"><span class="at-snip-name">#55587 Guide/Cert Tracking</span> <span class="at-ok">JS trigger</span> &middot; PH: yes</div><div class="at-snippet"><span class="at-snip-name">#56948 Universal Tracker</span> <span class="at-ok">JS trigger</span> &middot; PH: yes</div><div class="at-snippet"><span class="at-snip-name">#56949 Fluent Form Tracker</span> <span class="at-ok">JS trigger</span> &middot; PH: yes</div><div class="at-snippet"><span class="at-snip-name">#57438 Elementor Form Tracker</span> <span class="at-ok">JS trigger</span> &middot; PH: yes</div></div>
+        </div>
+        <div class="at-site">
+          <div class="at-site-header">
+            <span class="at-site-label">TR</span>
+            <span class="at-tag ok">Site-wide tag: loaded (via GTM)</span>
+          </div>
+          <div class="at-snippets"></div>
+        </div>
+  </div>
+</div>
+
+<!-- Snippet Integrity -->
+<div class="card">
+  <h2>Snippet Integrity</h2>
+  <div class="snippet-grid">
+        <div class="snippet-card">
+          <div class="snippet-site">RLI</div>
+          <div class="snippet-id ok">#55587</div>
+          <div class="snippet-name">Guide/Cert Tracking</div>
+          <div class="snippet-at at-ok">AT: JS trigger</div>
+          
+        </div>
+        <div class="snippet-card">
+          <div class="snippet-site">RLI</div>
+          <div class="snippet-id ok">#56948</div>
+          <div class="snippet-name">Universal Tracker</div>
+          <div class="snippet-at at-ok">AT: JS trigger</div>
+          
+        </div>
+        <div class="snippet-card">
+          <div class="snippet-site">RLI</div>
+          <div class="snippet-id ok">#56949</div>
+          <div class="snippet-name">Fluent Form Tracker</div>
+          <div class="snippet-at at-ok">AT: JS trigger</div>
+          
+        </div>
+        <div class="snippet-card">
+          <div class="snippet-site">RLI</div>
+          <div class="snippet-id ok">#57438</div>
+          <div class="snippet-name">Elementor Form Tracker</div>
+          <div class="snippet-at at-ok">AT: JS trigger</div>
+          
+        </div>
+        <div class="snippet-card">
+          <div class="snippet-site"></div>
+          <div class="snippet-id bad">#42980</div>
+          <div class="snippet-name">Universal Tracker</div>
+          
+          <div class="snippet-err">read failed</div>
+        </div>
+        <div class="snippet-card">
+          <div class="snippet-site"></div>
+          <div class="snippet-id bad">#42981</div>
+          <div class="snippet-name">Elementor Form Tracker</div>
+          
+          <div class="snippet-err">read failed</div>
+        </div></div>
+</div>
+
+<div style="text-align:center;margin-top:20px;font-size:12px;color:#94a3b8">
+  Powered by <a href="https://github.com/relationallifetherapy/rli-tracking-monitor" style="color:#3b82f6">rli-tracking-monitor</a>
+  &middot; Monitor runs every 15 min via GitHub Actions
+  &middot; Live refresh via proxy
+</div>
+
+<!-- Client-side real-time refresh via WP proxy (no API key exposed) -->
+<script>
+const PROXY = "https://relationallife.com/wp-json/rli/v1/posthog-events";
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function siteBadge(site) {
+  if (site === 'relationallife.com') return '<span class="site-badge rli">RLI</span>';
+  if (site === 'terryreal.com') return '<span class="site-badge tr">TR</span>';
+  return site ? '<span class="site-badge unknown">??</span>' : '<span class="site-badge unknown">??</span>';
+}
+
+function atBadgeLead(site) {
+  if (site === 'relationallife.com') return '<span class="at-yes">AT</span>';
+  if (site === 'terryreal.com') return '<span class="at-webhook">webhook</span>';
+  return '\u2014';
+}
+
+async function fetchEvents(eventName, hours) {
+  const params = new URLSearchParams({ event: eventName, hours: hours, limit: 50 });
+  const resp = await fetch(`${PROXY}?${params}`);
+  if (!resp.ok) throw new Error(`Proxy ${resp.status}`);
+  const data = await resp.json();
+  return data.results || [];
+}
+
+function renderLeadRow(ev) {
+  const ts = (ev.timestamp || '').slice(0, 19).replace('T', ' ');
+  const email = esc(ev.email || '\u2014');
+  const page = esc((ev.page || '\u2014').slice(0, 35));
+  return `<tr class="fresh-row">
+    <td class="ts">${ts}</td>
+    <td>${siteBadge(ev.site)}</td>
+    <td>${email}</td>
+    <td>${page}</td>
+    <td>${atBadgeLead(ev.site)}</td>
+  </tr>`;
+}
+
+function renderPurchaseRow(ev) {
+  const ts = (ev.timestamp || '').slice(0, 19).replace('T', ' ');
+  const email = esc(ev.email || '\u2014');
+  const product = esc(ev.product_name || '\u2014');
+  const price = ev.product_price || '';
+  const orderId = esc(ev.order_id || '\u2014');
+  const bump = ev.bump_name ? ` <span class="bump">+${esc(ev.bump_name)}</span>` : '';
+  return `<tr class="fresh-row">
+    <td class="ts">${ts}</td>
+    <td>${siteBadge(ev.site)}</td>
+    <td>${email}</td>
+    <td>${product}${bump}</td>
+    <td>${price ? '$' + price : '\u2014'}</td>
+    <td>${orderId}</td>
+    <td><span class="at-webhook">TC webhook</span></td>
+  </tr>`;
+}
+
+async function refreshLive() {
+  const btn = document.getElementById('refresh-btn');
+  const status = document.getElementById('refresh-status');
+  const liveStatus = document.getElementById('live-status');
+
+  btn.disabled = true;
+  btn.textContent = 'Refreshing...';
+  status.textContent = '';
+
+  try {
+    const [leads, purchases] = await Promise.all([
+      fetchEvents('Lead', 2),
+      fetchEvents('Purchase', 2),
+    ]);
+
+    // Update lead table
+    const leadTable = document.getElementById('lead-table');
+    if (leads.length > 0) {
+      leadTable.innerHTML = leads.map(renderLeadRow).join('');
+    } else {
+      leadTable.innerHTML = '<tr><td colspan="5" class="empty">No Lead events in last 2h</td></tr>';
+    }
+
+    // Update purchase table
+    const purchaseTable = document.getElementById('purchase-table');
+    if (purchases.length > 0) {
+      purchaseTable.innerHTML = purchases.map(renderPurchaseRow).join('');
+    } else {
+      purchaseTable.innerHTML = '<tr><td colspan="7" class="empty">No Purchase events in last 2h</td></tr>';
+    }
+
+    // Update counts
+    document.getElementById('lead-count').textContent = leads.length;
+    document.getElementById('purchase-count').textContent = purchases.length;
+    document.getElementById('lead-count-badge').textContent = leads.length;
+    document.getElementById('purchase-count-badge').textContent = purchases.length;
+
+    const now = new Date().toLocaleTimeString();
+    status.textContent = `Updated ${now}`;
+    liveStatus.style.display = 'inline';
+    document.getElementById('live-label').textContent = `Live (${now})`;
+
+  } catch (e) {
+    status.textContent = `Error: ${e.message}`;
+    console.error('Refresh failed:', e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Refresh Live';
+}
+
+// Auto-refresh on page load
+refreshLive();
+// And every 60 seconds
+setInterval(refreshLive, 60000);
+</script>
+
+</body>
+</html>
